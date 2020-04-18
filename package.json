@@ -1,0 +1,13 @@
+{
+  "name": "thehat",
+  "version": "0.0.0",
+  "description": "Play the Hat online",
+  "main": ".",
+  "scripts": {
+    "fmt": "prettier --write scripts/* styles/*"
+  },
+  "author": "",
+  "devDependencies": {
+    "prettier": "^1.5.3"
+  }
+}

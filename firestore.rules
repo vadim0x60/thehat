@@ -1,0 +1,57 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /restaurants/{restaurant} {
+      match /ratings/{rating} {
+        allow read: if request.auth != null;
+        allow write: if request.auth.uid == request.resource.data.userId;
+      }
+
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null
+                    && request.resource.data.name == resource.data.name
+                    && request.resource.data.city == resource.data.city
+                    && request.resource.data.price == resource.data.price
+                    && request.resource.data.category == resource.data.category;
+    }
+
+    match /hats/{hat} {
+      function get_hat() {
+        return get(/databases/$(database)/documents/hats/$(hat))
+      }
+
+      allow read: if resource.data.scoreboard[request.auth.uid] != null;
+      allow create: if request.auth != null;
+      allow update: if false;
+      allow delete: if false;
+
+      match /timing_rules {
+        allow update: if get_hat().current_round == 0;
+      }
+
+      match /current_round {
+        allow update: if get_hat().current_move == null
+      }
+
+      match /scoreboard/{player} {
+        allow create: if get_hat().current_round == 0;
+        allow update: if get_hat().current_move.explainor == request.auth.uid && get_hat().current_move.submission_ends > request.time;
+      }
+
+      match /word_pool/{author} {
+        allow create: if get_hat().current_round == 0 && author == request.auth.uid;
+        allow update: if get_hat().current_round == 0 && author == request.auth.uid;
+      }
+
+      match /current_move {
+        allow create: if true;
+        allow update: if get_hat().current_move.explainor == request.auth.uid;
+        allow delete: if get_hat().current_move.explainor == request.auth.uid;
+      }
+
+      match /words {
+        allow update: if get_hat().current_move.explainor == request.auth.uid;
+      }      
+    }
+  }
+}
